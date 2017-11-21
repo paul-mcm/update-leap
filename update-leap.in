@@ -115,6 +115,7 @@ my $PROG = basename($0);
 # Logging - Default is to use syslog(3) if STDOUT isn't 
 # connected to a tty.
 if ($SYSLOG || !-t STDOUT) {
+    $SYSLOG = 1;
     openlog($PROG, 'pid', $LOGFAC);
 } 
 else {
@@ -147,10 +148,9 @@ if ($QUIET && $DEBUG) {
 # Verify ntp.conf
 -r $NTPCONF || log_fatal(LOG_ERR, "Missing ntp configuration: $NTPCONF");
 
-# Parse ntp.conf for leapfile directive
-open my $LF, '<', $NTPCONF || log_fatal(LOG_ERR, "Can't open <$NTPCONF>: $!");
-
+# Parse ntp.conf for leapfile directive 
 if (! $LEAPFILE) {
+    open my $LF, '<', $NTPCONF || log_fatal(LOG_ERR, "Can't open <$NTPCONF>: $!");
     while (<$LF>) {
 	chomp;
 	$LEAPFILE = $1 if /^ *leapfile\s+"(\S+)"/;
