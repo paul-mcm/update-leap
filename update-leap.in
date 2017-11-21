@@ -145,19 +145,26 @@ if ($QUIET && $DEBUG) {
     log_fatal(LOG_ERR, '-q and -d options mutually exclusive');
 }
 
-# Verify ntp.conf
--r $NTPCONF || log_fatal(LOG_ERR, "Missing ntp configuration: $NTPCONF");
+if ($LEAPFILE && $NTPCONF) {
+    log_fatal(LOG_ERR, '-L and -f options mutually exclusive');
+}
 
-# Parse ntp.conf for leapfile directive 
+# Parse ntp.conf for path to leapfile if not set by user
 if (! $LEAPFILE) {
+
+    -r $NTPCONF || log_fatal(LOG_ERR, "Missing ntp configuration: $NTPCONF");
     open my $LF, '<', $NTPCONF || log_fatal(LOG_ERR, "Can't open <$NTPCONF>: $!");
+
     while (<$LF>) {
 	chomp;
 	$LEAPFILE = $1 if /^ *leapfile\s+"(\S+)"/;
     }
-}
+    close $LF;
 
-close $LF;
+    if (! $LEAPFILE) {
+	log_fatal(LOG_ERR, "No leapfile found in $NTPCONF and leapfile not given as arg"); 
+    }
+}
 
 -s $LEAPFILE || logger(LOG_DEBUG, "Leapfile $LEAPFILE is empty");
 
@@ -241,7 +248,7 @@ sub logger {
     return if ($QUIET && $p ne LOG_ERR);
 
     if ($TOTERM) {
-        if ($p eq LOG_ERR) {	# errors should go to STDERRR
+        if ($p eq LOG_ERR) {	# errors should go to STDERR
 	    print STDERR "$msg\n";
 	}
 	else {
