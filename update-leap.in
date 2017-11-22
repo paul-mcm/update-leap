@@ -1,4 +1,4 @@
-#! @PATH_PERL@ -w
+#! /usr/bin/perl -w #@PATH_PERL@ -w
 
 # Copyright (C) 2015 Network Time Foundation
 # Author: Harlan Stenn
@@ -34,6 +34,7 @@ my $RUN_DIR = '/tmp';
 my $RUN_UID = 0;
 my $TMP_FILE;
 my $TMP_FH;
+my $FILE_MODE = 0644;
 
 ######## DEFAULT CONFIGURATION ##########
 # LEAP FILE SRC URIS
@@ -162,7 +163,7 @@ if (! $LEAPFILE) {
     close $LF;
 
     if (! $LEAPFILE) {
-	log_fatal(LOG_ERR, "No leapfile found in $NTPCONF and leapfile not given as arg"); 
+	log_fatal(LOG_ERR, "No leapfile directive in $NTPCONF; leapfile location not known"); 
     }
 }
 
@@ -186,6 +187,7 @@ if ( !-e $LEAPFILE || $FORCE || ! verifySHA($LEAPFILE) ||
 
             if ( verifySHA($TMP_FILE) ) {
 		move_file($TMP_FILE, $LEAPFILE);
+		chmod $FILE_MODE, $LEAPFILE; 
 		logger(LOG_INFO, "Installed new $LEAPFILE from $LEAPSRC");
 	    }
 	    else {
