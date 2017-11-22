@@ -153,7 +153,6 @@ if ($LEAPFILE && $NTPCONF) {
 # Parse ntp.conf for path to leapfile if not set by user
 if (! $LEAPFILE) {
 
-    -r $NTPCONF || log_fatal(LOG_ERR, "Missing ntp configuration: $NTPCONF");
     open my $LF, '<', $NTPCONF || log_fatal(LOG_ERR, "Can't open <$NTPCONF>: $!");
 
     while (<$LF>) {
