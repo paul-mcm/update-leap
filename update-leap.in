@@ -204,6 +204,7 @@ if ( !-e $LEAPFILE || $FORCE || ! verifySHA($LEAPFILE) ||
 	}
 
 	# Failure
+	unlink $TMP_FILE;
 	logger(LOG_INFO, "Download failed. Waiting $INTERVAL minutes before retrying...");
         sleep $INTERVAL * 60 ;
     }
