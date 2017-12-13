@@ -43,14 +43,13 @@ my $FILE_MODE = 0644;
 #    HTTP - No TLS/SSL - (not recommended)
 #	http://www.ietf.org/timezones/data/leap-seconds.list
 
+my $NTPCONF;
 my $LEAPSRC = 'https://www.ietf.org/timezones/data/leap-seconds.list';
 my $LEAPFILE;
 
 # How many times to try to download new file
 my $MAXTRIES = 6;
 my $INTERVAL = 10;
-
-my $NTPCONF='/etc/ntp.conf';
 
 # How long (in days) before expiration to get updated file
 my $PREFETCH = 60;
@@ -73,8 +72,7 @@ my %SSL_ATTRS = (
 
 our(%opt);
 
-GetOptions(\%opt,
-	'C=s',
+GetOptions(\%opt,	'C=s',
 	'D=s',
 	'e:60',
 	'F',
@@ -91,11 +89,18 @@ GetOptions(\%opt,
 	'v',
 	);
 
+
+if (defined $opt{L}) {
+    $NTPCONF = $opt{f};
+}
+else {
+    $NTPCONF='/etc/ntp.conf';
+}
+
 $LOGFAC   = $opt{l} if defined $opt{l};
 $LEAPSRC  = $opt{u} if defined $opt{u};
 $LEAPFILE = $opt{L} if defined $opt{L};
 $PREFETCH = $opt{e} if defined $opt{e};
-$NTPCONF  = $opt{f} if defined $opt{f};
 $MAXTRIES = $opt{r} if defined $opt{r};
 $INTERVAL = $opt{i} if defined $opt{i};
 
@@ -143,7 +148,7 @@ if (defined $opt{h}) {
 }
 
 if ($QUIET && $DEBUG) {
-    log_fatal(LOG_ERR, '-q and -d options mutually exclusive');
+    log_fatal(LOG_ERR, '-q and -v options mutually exclusive');
 }
 
 if ($LEAPFILE && $NTPCONF) {
@@ -271,9 +276,9 @@ sub logger {
 # unknown state).
 #
 # HTTP::Tiny doesn't export a method to explicitly close a connected
-# socket, therefore, we instantiate the lexically scoped object in a
-# function; when the function returns, the http object goes out of
-# scope and is destroyed, closing the socket.
+# socket, therefore, we instantiate the lexically scoped $http object in
+# a function; when the function returns, the object goes out of scope
+# and is destroyed, closing the socket.
 sub retrieve_file {
 
     my $fh = shift;
