@@ -90,7 +90,7 @@ GetOptions(\%opt,	'C=s',
 	);
 
 
-if (defined $opt{L}) {
+if (defined $opt{f}) {
     $NTPCONF = $opt{f};
 }
 else {
