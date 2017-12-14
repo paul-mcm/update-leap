@@ -1,7 +1,9 @@
 #! /usr/bin/perl -w #@PATH_PERL@ -w
 
-# Copyright (C) 2015 Network Time Foundation
+# Copyright (C) 2015, 2017 Network Time Foundation
 # Author: Harlan Stenn
+#
+# General cleanup and https support: Paul McMath
 #
 # Original shell version:
 # Copyright (C) 2014 Timothe Litt litt at acm dot org
