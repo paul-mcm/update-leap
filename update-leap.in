@@ -43,13 +43,14 @@ my $FILE_MODE = 0644;
 #    HTTP - No TLS/SSL - (not recommended)
 #	http://www.ietf.org/timezones/data/leap-seconds.list
 
-my $NTPCONF;
 my $LEAPSRC = 'https://www.ietf.org/timezones/data/leap-seconds.list';
 my $LEAPFILE;
 
 # How many times to try to download new file
 my $MAXTRIES = 6;
 my $INTERVAL = 10;
+
+my $NTPCONF='/etc/ntp.conf';
 
 # How long (in days) before expiration to get updated file
 my $PREFETCH = 60;
@@ -72,7 +73,8 @@ my %SSL_ATTRS = (
 
 our(%opt);
 
-GetOptions(\%opt,	'C=s',
+GetOptions(\%opt,	
+	'C=s',
 	'D=s',
 	'e:60',
 	'F',
@@ -89,18 +91,11 @@ GetOptions(\%opt,	'C=s',
 	'v',
 	);
 
-
-if (defined $opt{f}) {
-    $NTPCONF = $opt{f};
-}
-else {
-    $NTPCONF='/etc/ntp.conf';
-}
-
 $LOGFAC   = $opt{l} if defined $opt{l};
 $LEAPSRC  = $opt{u} if defined $opt{u};
 $LEAPFILE = $opt{L} if defined $opt{L};
 $PREFETCH = $opt{e} if defined $opt{e};
+$NTPCONF  = $opt{f} if defined $opt{f};
 $MAXTRIES = $opt{r} if defined $opt{r};
 $INTERVAL = $opt{i} if defined $opt{i};
 
@@ -128,6 +123,14 @@ else {
     $TOTERM = 1;
 }
 
+if (defined $opt{q} && defined $opt{v}) {
+    log_fatal(LOG_ERR, '-q and -v options mutually exclusive');
+}
+
+if (defined $opt{L} && defined $opt{f}) {
+    log_fatal(LOG_ERR, '-L and -f options mutually exclusive');
+}
+
 $SIG{INT} = \&signal_catcher;
 $SIG{TERM} = \&signal_catcher;
 $SIG{QUIT} = \&signal_catcher;
@@ -145,14 +148,6 @@ chdir $RUN_DIR || log_fatal("Failed to change dir to $RUN_DIR");
 if (defined $opt{h}) {
     show_help();
     exit 0;
-}
-
-if ($QUIET && $DEBUG) {
-    log_fatal(LOG_ERR, '-q and -v options mutually exclusive');
-}
-
-if ($LEAPFILE && $NTPCONF) {
-    log_fatal(LOG_ERR, '-L and -f options mutually exclusive');
 }
 
 # Parse ntp.conf for path to leapfile if not set by user
